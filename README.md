@@ -29,4 +29,16 @@ echo "alias sql+='rlwrap sqlplus / as sysdba'" >> .bash_profile
 sql+
 ```
 
+### Setup simple test - one million row table
+
+```
+set timing on
+create table t1m (id integer, f1 varchar2(100));
+insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah blah blah blah blah' f1 from dual connect by 1=1 and level <= 1000000;
+
+
+set autotrace traceonly
+select * from t1m;
+select * from t1m;
+```
 
