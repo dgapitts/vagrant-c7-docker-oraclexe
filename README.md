@@ -101,7 +101,6 @@ set autotrace traceonly
 select * from t1m;
 select * from t1m;
 ```
-
 NB I broke this 1million row insert into 2 lots of 500K to avoid ORA-30009 (as I'm running with only 200G of PGA)
 
 ```
@@ -109,6 +108,82 @@ insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah 
             *
 ERROR at line 1:
 ORA-30009: Not enough memory for CONNECT BY operation
+```
+
+Some sample results for the selects - 75K logical reads in 2.9 seconds 
+
+
+```
+Elapsed: 00:00:02.91
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2909280484
+
+--------------------------------------------------------------------------
+| Id  | Operation	  | Name | Rows  | Bytes | Cost (%CPU)| Time	 |
+--------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |	 |   889K|    55M|  2638   (1)| 00:00:01 |
+|   1 |  TABLE ACCESS FULL| T1M  |   889K|    55M|  2638   (1)| 00:00:01 |
+--------------------------------------------------------------------------
+
+Note
+-----
+   - dynamic statistics used: dynamic sampling (level=2)
+
+
+Statistics
+----------------------------------------------------------
+	  8  recursive calls
+	  0  db block gets
+      75732  consistent gets
+	  0  physical reads
+	  0  redo size
+   83503582  bytes sent via SQL*Net to client
+     733378  bytes received via SQL*Net from client
+      66668  SQL*Net roundtrips to/from client
+	  0  sorts (memory)
+	  0  sorts (disk)
+    1000000  rows processed
+```
+
+which is impressive this was on a tiny 1G
+```
+
+bash-4.2$ free -m
+              total        used        free      shared  buff/cache   available
+Mem:            991         337          66         280         587         231
+Swap:          1535         402        1133
+```
+
+and *single* CPU VM 
+
+```
+bash-4.2$ cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 70
+model name	: Intel(R) Core(TM) i7-4770HQ CPU @ 2.20GHz
+stepping	: 1
+cpu MHz		: 2194.918
+cache size	: 6144 KB
+physical id	: 0
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc pni pclmulqdq monitor ssse3 cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx rdrand hypervisor lahf_lm abm fsgsbase avx2 invpcid
+bogomips	: 4389.83
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
 ```
 
 
