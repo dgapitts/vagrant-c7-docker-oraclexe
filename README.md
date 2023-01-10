@@ -102,6 +102,14 @@ select * from t1m;
 select * from t1m;
 ```
 
+NB I broke this 1million row insert into 2 lots of 500K to avoid ORA-30009 (as I'm running with only 200G of PGA)
+
+```
+insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah blah blah blah blah' f1 from dual connect by 1=1 and level <= 1000000
+            *
+ERROR at line 1:
+ORA-30009: Not enough memory for CONNECT BY operation
+```
 
 
 
