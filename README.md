@@ -89,6 +89,9 @@ startup pfile='/tmp/pfile'
 
 
 
+
+
+
 ### Setup simple test - one million row table
 
 ```
@@ -185,6 +188,142 @@ cache_alignment	: 64
 address sizes	: 39 bits physical, 48 bits virtual
 power management:
 ```
+
+
+### docker commit - first attempt at saving state
+
+Unfortunately I keep having to repeat these steps
+
+```
+su - root -c "yum install -y oracle-epel-release-el7"
+su - root -c "yum install -y rlwrap less vi"
+echo "alias sql+='rlwrap sqlplus / as sysdba'" >> .bash_profile
+. .bash_profile
+cat > /tmp/pfile <<'_EOF'
+*.audit_file_dest='/opt/oracle/admin/XE/adump'
+*.audit_trail='db'
+*.compatible='21.0.0'
+*.control_files='/opt/oracle/oradata/XE/control01.ctl'
+*.db_block_size=8192
+*.db_name='XE'
+*.diagnostic_dest='/opt/oracle'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=XEXDB)'
+*.enable_pluggable_database=true
+*.local_listener=''
+*.nls_language='AMERICAN'
+*.nls_territory='AMERICA'
+*.open_cursors=300
+*.pga_aggregate_target=200m
+*.processes=70
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=500m
+*.undo_tablespace='UNDOTBS1'
+_EOF
+sql+
+```
+
+as oracle
+
+```
+set time on
+set timing on
+startup pfile=/tmp/pfile
+
+create table t1m (id integer, f1 varchar2(100));
+-- insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah blah blah blah blah' f1 from dual connect by 1=1 and level <= 1000000;
+insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah blah blah blah blah' f1 from dual connect by 1=1 and level <= 500000;
+insert into t1m (id, f1) select level, 'blah blah blah blah blah blah blah blah blah blah blah blah' f1 from dual connect by 1=1 and level <= 500000;
+set autotrace traceonly
+select * from t1m;
+select * from t1m;
+```
+
+
+then in a parallel session
+
+```
+~/projects/vagrant-c7-docker-oraclexe $ vagrant ssh
+Last login: Sun Jan 15 08:24:40 2023 from 10.0.2.2
+-bash: warning: setlocale: LC_CTYPE: cannot change locale (UTF-8): No such file or directory
+[vagrant@c7-master ~]$ sudo -i
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE          COMMAND       CREATED          STATUS                    PORTS     NAMES
+0ea561fcfc99   c273dde6b184   "/bin/bash"   18 minutes ago   Up 18 minutes (healthy)             gallant_borg
+[root@c7-master ~]# docker images
+REPOSITORY                                       TAG       IMAGE ID       CREATED        SIZE
+container-registry.oracle.com/database/express   latest    c273dde6b184   3 months ago   11.2GB
+[root@c7-master ~]# docker commit 0ea561fcfc99 container-registry.oracle.com/database/express:dgapitts_001
+[root@c7-master ~]# docker images
+REPOSITORY                                       TAG            IMAGE ID       CREATED          SIZE
+container-registry.oracle.com/database/express   dgapitts_001   cacafb1a0236   16 seconds ago   16.5GB
+container-registry.oracle.com/database/express   latest         c273dde6b184   3 months ago     11.2GB
+```
+
+now back in the first session lets try disconnecting from the original image and reconnecting to the new
+
+```
+Statistics
+----------------------------------------------------------
+	  0  recursive calls
+	  0  db block gets
+     113520  consistent gets
+      14562  physical reads
+	  0  redo size
+  125255033  bytes sent via SQL*Net to client
+    1100041  bytes received via SQL*Net from client
+     100001  SQL*Net roundtrips to/from client
+	  0  sorts (memory)
+	  0  sorts (disk)
+    1500000  rows processed
+
+08:43:23 SQL> exit
+Disconnected from Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+bash-4.2$ exit
+exit
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[root@c7-master ~]# docker images
+REPOSITORY                                       TAG            IMAGE ID       CREATED         SIZE
+container-registry.oracle.com/database/express   dgapitts_001   cacafb1a0236   3 minutes ago   16.5GB
+container-registry.oracle.com/database/express   latest         c273dde6b184   3 months ago    11.2GB
+[root@c7-master ~]# docker run -it cacafb1a0236  /bin/bash
+bash-4.2$ id
+uid=54321(oracle) gid=54321(oinstall) groups=54321(oinstall),54322(dba),54323(oper),54324(backupdba),54325(dgdba),54326(kmdba),54330(racdba)
+bash-4.2$ sql+
+bash: sql+: command not found
+bash-4.2$ . .bash_profile
+bash-4.2$ sql+
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Sun Jan 15 08:56:54 2023
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Connected to an idle instance.
+
+SQL> startup pfile=/tmp/pfile
+ORACLE instance started.
+
+Total System Global Area  524284200 bytes
+Fixed Size		    9687336 bytes
+Variable Size		  163577856 bytes
+Database Buffers	  348127232 bytes
+Redo Buffers		    2891776 bytes
+Database mounted.
+ORA-01114: IO error writing block to file 1 (block # 1)
+ORA-01110: data file 1: '/opt/oracle/oradata/XE/system01.dbf'
+ORA-27091: unable to queue I/O
+ORA-27041: unable to open file
+Linux-x86_64 Error: 28: No space left on device
+Additional information: 3
+```
+
+
+
+
+
+
 
 
 
