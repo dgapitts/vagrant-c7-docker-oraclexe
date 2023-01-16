@@ -320,6 +320,28 @@ Additional information: 3
 ```
 
 
+### Docker image cleanup and side issue with image is being used
+
+```
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[root@c7-master ~]# docker images
+REPOSITORY                                       TAG            IMAGE ID       CREATED        SIZE
+container-registry.oracle.com/database/express   dgapitts_001   cacafb1a0236   18 hours ago   16.5GB
+container-registry.oracle.com/database/express   latest         c273dde6b184   3 months ago   11.2GB
+[root@c7-master ~]# docker image rm cacafb1a0236
+Error response from daemon: conflict: unable to delete cacafb1a0236 (must be forced) - image is being used by stopped container c67675064c88
+```
+
+
+and with [force option as per stackoverflow](https://stackoverflow.com/questions/51188657/image-is-being-used-by-stopped-container)
+```
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[root@c7-master ~]# docker image rm -f cacafb1a0236
+Untagged: container-registry.oracle.com/database/express:dgapitts_001
+Deleted: sha256:cacafb1a02360ad8fb8254fdbfce83de64a0b7e7e71dbac1e8e5ec5b22e835c1
+```
 
 
 
