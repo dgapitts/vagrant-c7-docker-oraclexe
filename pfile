@@ -1,0 +1,18 @@
+*.audit_file_dest='/opt/oracle/admin/XE/adump'
+*.audit_trail='db'
+*.compatible='21.0.0'
+*.control_files='/opt/oracle/oradata/XE/control01.ctl'
+*.db_block_size=8192
+*.db_name='XE'
+*.diagnostic_dest='/opt/oracle'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=XEXDB)'
+*.enable_pluggable_database=true
+*.local_listener=''
+*.nls_language='AMERICAN'
+*.nls_territory='AMERICA'
+*.open_cursors=300
+*.pga_aggregate_target=200m
+*.processes=70
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=500m
+*.undo_tablespace='UNDOTBS1'

@@ -379,3 +379,25 @@ Deleted: sha256:cacafb1a02360ad8fb8254fdbfce83de64a0b7e7e71dbac1e8e5ec5b22e835c1
 [root@c7-master overlay2]#
 ```
 
+
+### Rebuild project - destroy with --force option
+
+```
+~/projects/vagrant-c7-docker-oraclexe $ vagrant destroy --force
+==> vagrant: A new version of Vagrant is available: 2.3.4 (installed version: 2.2.19)!
+==> vagrant: To upgrade visit: https://www.vagrantup.com/downloads.html
+
+==> master1: Forcing shutdown of VM...
+==> master1: Destroying VM and associated drives...
+~/projects/vagrant-c7-docker-oraclexe $ vagrant up
+Bringing machine 'master1' up with 'virtualbox' provider...
+==> master1: Importing base box 'https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1804_02.VirtualBox.box'...
+==> master1: Matching MAC address for NAT networking...
+...
+```
+
+
+
+
+
+
