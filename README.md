@@ -396,6 +396,52 @@ Bringing machine 'master1' up with 'virtualbox' provider...
 ...
 ```
 
+### Testing out gvenzl/oracle-xe
+
+```
+[root@c7-master ~]# docker pull container-registry.oracle.com/database/express:latest
+Error response from daemon: Head "https://container-registry.oracle.com/v2/database/express/manifests/latest": received unexpected HTTP status: 502 Bad Gateway
+[root@c7-master ~]# docker pull gvenzl/oracle-xe
+Using default tag: latest
+latest: Pulling from gvenzl/oracle-xe
+59e0972d3a0b: Pull complete
+b374bb1192d1: Extracting [============================================>      ]  1.456GB/1.649GB
+```
+but this will not stay up:
+```
+[root@c7-master ~]# docker run -e ORACLE_RANDOM_PASSWORD=yes -p 1521:1521 -d gvenzl/oracle-xe
+5a09f71f32d8c39f0fe434db4d1bd3a799057bb1826ba47abf29056bb46e7a8c
+[root@c7-master ~]# for i in {1..100};do free -m;uptime;docker ps;sleep 10;done
+              total        used        free      shared  buff/cache   available
+Mem:            991         109          67           2         813         707
+Swap:          1535          34        1501
+ 19:51:12 up 1 day, 20:51,  1 user,  load average: 0.54, 0.27, 0.15
+CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+5a09f71f32d8   gvenzl/oracle-xe   "container-entrypoin…"   3 seconds ago   Up 2 seconds   0.0.0.0:1521->1521/tcp, :::1521->1521/tcp   brave_shaw
+              total        used        free      shared  buff/cache   available
+Mem:            991         108          64           2         818         704
+Swap:          1535          35        1500
+ 19:51:22 up 1 day, 20:52,  1 user,  load average: 0.61, 0.29, 0.16
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+5a09f71f32d8   gvenzl/oracle-xe   "container-entrypoin…"   13 seconds ago   Up 12 seconds   0.0.0.0:1521->1521/tcp, :::1521->1521/tcp   brave_shaw
+              total        used        free      shared  buff/cache   available
+Mem:            991         107          57           2         826         704
+Swap:          1535          35        1500
+ 19:51:33 up 1 day, 20:52,  1 user,  load average: 1.00, 0.39, 0.19
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+5a09f71f32d8   gvenzl/oracle-xe   "container-entrypoin…"   24 seconds ago   Up 24 seconds   0.0.0.0:1521->1521/tcp, :::1521->1521/tcp   brave_shaw
+              total        used        free      shared  buff/cache   available
+Mem:            991         101          69           2         820         714
+Swap:          1535          36        1499
+ 19:51:43 up 1 day, 20:52,  1 user,  load average: 0.92, 0.40, 0.19
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+              total        used        free      shared  buff/cache   available
+Mem:            991         101          74           2         815         715
+Swap:          1535          36        1499
+ 19:51:54 up 1 day, 20:52,  1 user,  load average: 0.78, 0.38, 0.19
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+...
+```
 
 
 
