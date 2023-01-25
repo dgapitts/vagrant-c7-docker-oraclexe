@@ -398,6 +398,15 @@ Bringing machine 'master1' up with 'virtualbox' provider...
 
 ### Testing out gvenzl/oracle-xe
 
+This image is a lot smaller
+
+```
+[root@c7-master ~]# docker images
+REPOSITORY         TAG       IMAGE ID       CREATED        SIZE
+gvenzl/oracle-xe   latest    9ba5f4c4610b   2 months ago   3.17G
+```
+
+but for some reason will not start
 ```
 [root@c7-master ~]# docker pull container-registry.oracle.com/database/express:latest
 Error response from daemon: Head "https://container-registry.oracle.com/v2/database/express/manifests/latest": received unexpected HTTP status: 502 Bad Gateway
@@ -443,6 +452,59 @@ CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ...
 ```
 
+
+```
+[root@c7-master ~]# docker run -e ORACLE_RANDOM_PASSWORD=yes -p 1521:1521 -d gvenzl/oracle-xe
+873e34d20a110b40cc5169f2c9ec8548333986a45c9f055414d3442fd69a923f
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE              COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+873e34d20a11   gvenzl/oracle-xe   "container-entrypoin…"   29 seconds ago   Up 27 seconds   0.0.0.0:1521->1521/tcp, :::1521->1521/tcp   laughing_elbakyan
+```
+
+and using `docker logs` as [described here](https://docs.docker.com/engine/reference/commandline/logs/):
+
+```
+[root@c7-master ~]# docker logs -f --until=2s 873e34d20a11
+CONTAINER: starting up...
+CONTAINER: first database startup, initializing...
+CONTAINER: uncompressing database data files, please wait...
+CONTAINER: done uncompressing database data files, duration: 29 seconds.
+CONTAINER: starting up Oracle Database...
+
+LSNRCTL for Linux: Version 21.0.0.0.0 - Production on 25-JAN-2023 10:48:00
+
+Copyright (c) 1991, 2021, Oracle.  All rights reserved.
+
+Starting /opt/oracle/product/21c/dbhomeXE/bin/tnslsnr: please wait...
+
+TNSLSNR for Linux: Version 21.0.0.0.0 - Production
+System parameter file is /opt/oracle/homes/OraDBHome21cXE/network/admin/listener.ora
+Log messages written to /opt/oracle/diag/tnslsnr/873e34d20a11/listener/alert/log.xml
+Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=ipc)(KEY=EXTPROC_FOR_XE)))
+Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=0.0.0.0)(PORT=1521)))
+
+Connecting to (DESCRIPTION=(ADDRESS=(PROTOCOL=IPC)(KEY=EXTPROC_FOR_XE)))
+STATUS of the LISTENER
+------------------------
+Alias                     LISTENER
+Version                   TNSLSNR for Linux: Version 21.0.0.0.0 - Production
+Start Date                25-JAN-2023 10:48:00
+Uptime                    0 days 0 hr. 0 min. 0 sec
+Trace Level               off
+Security                  ON: Local OS Authentication
+SNMP                      OFF
+Default Service           XE
+Listener Parameter File   /opt/oracle/homes/OraDBHome21cXE/network/admin/listener.ora
+Listener Log File         /opt/oracle/diag/tnslsnr/873e34d20a11/listener/alert/log.xml
+Listening Endpoints Summary...
+  (DESCRIPTION=(ADDRESS=(PROTOCOL=ipc)(KEY=EXTPROC_FOR_XE)))
+  (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=0.0.0.0)(PORT=1521)))
+The listener supports no services
+The command completed successfully
+ORA-27104: system-defined limits for shared memory was misconfigured
+```
+
+we seem to hitting memory issues i.e. 'ORA-27104' 
 
 
 
