@@ -1,7 +1,53 @@
 # vagrant-c7-docker-oraclexe
 
+## Simplifying manual steps with docker cp
 
 
+In first terminal start docker
+
+```
+
+[root@c7-master ~]# docker run -it c273 /bin/bash 
+bash-4.2$ 
+bash-4.2$ is
+bash: is: command not found
+bash-4.2$ id
+uid=54321(oracle) gid=54321(oinstall) groups=54321(oinstall),54322(dba),54323(oper),54324(backupdba),54325(dgdba),54326(kmdba),54330(racdba)
+```
+
+then in second terminal (on the host): get the new container name and use `docker cp` to copy across the rlwrap.sh
+
+```
+[root@c7-master ~]# docker ps
+CONTAINER ID   IMAGE     COMMAND       CREATED          STATUS                             PORTS     NAMES
+67eda60f0a2b   c273      "/bin/bash"   24 seconds ago   Up 24 seconds (health: starting)             happy_leakey
+[root@c7-master ~]# docker cp /vagrant/rlwrap_setup.sh happy_leakey:/tmp
+Preparing to copy...
+Copying to container - 2.048kB
+Successfully copied 2.048kB to happy_leakey:/tmp
+[root@c7-master ~]# docker cp /vagrant/pfile happy_leakey:/tmp
+Preparing to copy...
+Copying to container - 2.048kB
+Successfully copied 2.048kB to happy_leakey:/tmp
+
+```
+
+and now back in the first terminal i.e. running inside the docker 
+
+```
+bash-4.2$ bash /tmp/rlwrap_setup.sh 
+Loaded plugins: ovl
+ol7_latest                                                                                  | 3.6 kB  00:00:00     
+(1/3): ol7_latest/x86_64/group_gz                                                           | 136 kB  00:00:00     
+(2/3): ol7_latest/x86_64/updateinfo                                                         | 3.5 MB  00:00:01     
+(3/3): ol7_latest/x86_64/primary_db                                                         |  44 MB  00:00:02     
+Resolving Dependencies
+--> Running transaction check
+---> Package oracle-epel-release-el7.x86_64 0:1.0-4.el7 will be installed
+--> Finished Dependency Resolution
+
+...
+```
 
 ## Additional steps for rlwrap setup plus a few other more standard packages
 
